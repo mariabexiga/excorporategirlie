@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Fundo de Emergência | Maria Bexiga</title>
+<meta name="description" content="Calcula em segundos quanto precisas de ter guardado para o teu fundo de emergência, e quanto tempo falta para lá chegares. Ferramenta exclusiva para subscritores da newsletter de Maria Bexiga, Ex-Corporate Girlie.">
+
+<meta property="og:title" content="Calculadora de Fundo de Emergência | Maria Bexiga">
+<meta property="og:description" content="Calcula em segundos quanto precisas de ter guardado para o teu fundo de emergência.">
+<meta property="og:image" content="images/og-image.jpg">
+<meta property="og:type" content="website">
+
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+<link rel="shortcut icon" href="images/favicon.ico">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#b45e45">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+  :root{
+    --terracotta:#b45e45;
+    --terracotta-deep:#95492f;
+    --cream:#fffaf3;
+    --cream-card:#fffdfa;
+    --paper:#f3e9dc;
+    --ink:#2c1c12;
+    --ink-soft:#6b5847;
+    --gold:#b8874a;
+    --good:#4a7c59;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--terracotta);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:48px 16px;
+  }
+
+  .card{
+    max-width:480px;
+    margin:0 auto;
+    background:var(--cream-card);
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 30px 60px -20px rgba(44,28,18,0.35);
+    padding:38px 32px 40px;
+  }
+
+  .back-link{
+    display:inline-block;
+    font-size:12.5px;
+    font-weight:500;
+    color:var(--ink-soft);
+    text-decoration:none;
+    margin-bottom:22px;
+  }
+  .back-link:hover{ color:var(--ink); }
+
+  .eyebrow{
+    text-align:center;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:2.5px;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin:0 0 10px;
+  }
+
+  h1{
+    font-family:'Playfair Display',serif;
+    font-weight:600;
+    font-size:29px;
+    line-height:1.2;
+    text-align:center;
+    letter-spacing:-0.2px;
+    margin:0 0 12px;
+    color:var(--ink);
+  }
+
+  .intro{
+    text-align:center;
+    font-size:14.5px;
+    font-weight:400;
+    line-height:1.7;
+    color:var(--ink-soft);
+    margin:0 0 34px;
+  }
+
+  .field{
+    margin-bottom:22px;
+  }
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+  .field .hint{
+    font-size:12px;
+    font-weight:400;
+    color:var(--ink-soft);
+    margin-top:6px;
+  }
+
+  .input-wrap{
+    position:relative;
+  }
+  .input-wrap span{
+    position:absolute;
+    left:16px;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--ink-soft);
+    font-weight:500;
+    font-size:15px;
+  }
+  input[inputmode="decimal"]{
+    width:100%;
+    padding:14px 16px 14px 34px;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    font-weight:500;
+    color:var(--ink);
+    background:var(--cream);
+    border:1.5px solid rgba(44,28,18,0.14);
+    border-radius:12px;
+    outline:none;
+    transition:border-color .2s ease;
+    -moz-appearance:textfield;
+  }
+  input[inputmode="decimal"]:focus{
+    border-color:var(--terracotta);
+  }
+  input[inputmode="decimal"]::-webkit-outer-spin-button,
+  input[inputmode="decimal"]::-webkit-inner-spin-button{
+    -webkit-appearance:none;
+    margin:0;
+  }
+
+  .expense-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .expense-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--cream);
+    border:1.5px solid rgba(44,28,18,0.10);
+    border-radius:12px;
+    padding:10px 12px;
+    transition:border-color .2s ease;
+  }
+  .expense-item:focus-within{
+    border-color:var(--terracotta);
+  }
+  .expense-icon{
+    font-size:18px;
+    flex-shrink:0;
+  }
+  .expense-field{
+    flex:1;
+    min-width:0;
+  }
+  .expense-field label{
+    display:block;
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:3px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .input-wrap.small{
+    position:relative;
+  }
+  .input-wrap.small span{
+    position:absolute;
+    left:0;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--ink-soft);
+    font-weight:500;
+    font-size:13px;
+  }
+  .input-wrap.small input{
+    width:100%;
+    padding:0 0 0 14px;
+    border:none;
+    background:transparent;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink);
+    outline:none;
+  }
+
+  .expense-total{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--paper);
+    border-radius:12px;
+    padding:14px 16px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-soft);
+  }
+  .expense-total strong{
+    font-family:'Playfair Display',serif;
+    font-size:19px;
+    font-weight:600;
+    color:var(--terracotta-deep);
+  }
+
+  .months-options{
+    display:flex;
+    gap:10px;
+  }
+  .month-btn{
+    flex:1;
+    padding:12px 8px;
+    text-align:center;
+    background:var(--cream);
+    border:1.5px solid rgba(44,28,18,0.14);
+    border-radius:12px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:all .2s ease;
+  }
+  .month-btn.active{
+    background:var(--terracotta);
+    border-color:var(--terracotta);
+    color:#fff;
+  }
+
+  .divider{
+    width:100%;
+    height:1px;
+    background:linear-gradient(to right, transparent, rgba(44,28,18,0.12), transparent);
+    margin:30px 0;
+  }
+
+  .quiz-toggle-link{
+    display:block;
+    width:100%;
+    text-align:center;
+    background:var(--cream);
+    border:1.5px dashed rgba(180,94,69,0.45);
+    color:var(--terracotta-deep);
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:14px;
+    padding:12px;
+    border-radius:12px;
+    transition:background .2s ease, border-color .2s ease;
+  }
+  .quiz-toggle-link:hover{
+    background:var(--paper);
+    border-color:var(--terracotta);
+  }
+
+  .quiz-box{
+    background:var(--cream);
+    border:1.5px solid rgba(44,28,18,0.10);
+    border-radius:14px;
+    padding:18px;
+    margin-top:12px;
+  }
+  .quiz-q{
+    margin-bottom:16px;
+  }
+  .quiz-q:last-of-type{ margin-bottom:8px; }
+  .quiz-q label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+  .quiz-options{
+    display:flex;
+    gap:8px;
+  }
+  .quiz-opt{
+    flex:1;
+    padding:10px 8px;
+    background:var(--cream-card);
+    border:1.5px solid rgba(44,28,18,0.12);
+    border-radius:10px;
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:all .2s ease;
+  }
+  .quiz-opt.selected{
+    background:var(--terracotta);
+    border-color:var(--terracotta);
+    color:#fff;
+  }
+  .quiz-result{
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--terracotta-deep);
+    text-align:center;
+    margin:10px 0 0;
+    min-height:16px;
+  }
+
+  .inflation-box{
+    background:var(--cream);
+    border:1.5px solid rgba(44,28,18,0.10);
+    border-radius:14px;
+    padding:16px 18px;
+  }
+  .inflation-header{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+  }
+  .inflation-text{
+    flex:1;
+  }
+  .toggle{
+    flex-shrink:0;
+    width:44px;
+    height:26px;
+    background:rgba(44,28,18,0.18);
+    border:none;
+    border-radius:100px;
+    cursor:pointer;
+    position:relative;
+    padding:0;
+    transition:background .2s ease;
+    margin-top:2px;
+  }
+  .toggle[aria-checked="true"]{
+    background:var(--terracotta);
+  }
+  .toggle-knob{
+    position:absolute;
+    top:3px;
+    left:3px;
+    width:20px;
+    height:20px;
+    background:#fff;
+    border-radius:50%;
+    transition:transform .2s ease;
+    box-shadow:0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle[aria-checked="true"] .toggle-knob{
+    transform:translateX(18px);
+  }
+  .inflation-badge{
+    display:inline-block;
+    margin-top:12px;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    color:var(--terracotta-deep);
+    background:var(--paper);
+    padding:5px 12px;
+    border-radius:100px;
+  }
+  .inflation-badge.off{
+    color:var(--ink-soft);
+    background:transparent;
+  }
+
+  .scenario-compare{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:8px;
+    margin-top:14px;
+  }
+  .scenario-card{
+    text-align:center;
+    background:var(--cream);
+    border:1.5px solid rgba(44,28,18,0.10);
+    border-radius:12px;
+    padding:12px 6px;
+    transition:all .25s ease;
+  }
+  .scenario-card.active{
+    background:var(--terracotta);
+    border-color:var(--terracotta);
+  }
+  .scenario-months{
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .scenario-card.active .scenario-months{
+    color:rgba(255,255,255,0.8);
+  }
+  .scenario-value{
+    font-family:'Playfair Display',serif;
+    font-weight:600;
+    font-size:15px;
+    color:var(--ink);
+  }
+  .scenario-card.active .scenario-value{
+    color:#fff;
+  }
+
+  .result{
+    background:var(--paper);
+    border-radius:16px;
+    padding:30px 24px 26px;
+    text-align:center;
+    animation:fadeIn .5s ease;
+  }
+  @keyframes fadeIn{
+    from{ opacity:0; transform:translateY(6px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .ring-wrap{
+    position:relative;
+    width:168px;
+    height:168px;
+    margin:0 auto 20px;
+  }
+  .ring{
+    width:100%;
+    height:100%;
+    transform:rotate(-90deg);
+  }
+  .ring-bg{
+    fill:none;
+    stroke:rgba(180,94,69,0.14);
+    stroke-width:11;
+  }
+  .ring-progress{
+    fill:none;
+    stroke:var(--terracotta);
+    stroke-width:11;
+    stroke-linecap:round;
+    stroke-dasharray:439.8;
+    stroke-dashoffset:439.8;
+    transition:stroke-dashoffset .7s cubic-bezier(.4,0,.2,1), stroke .3s ease;
+  }
+  .ring-progress.complete{
+    stroke:var(--good);
+  }
+  .ring-center{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .ring-percent{
+    font-family:'Playfair Display',serif;
+    font-weight:600;
+    font-size:30px;
+    color:var(--terracotta-deep);
+  }
+  .ring-percent.complete{
+    color:var(--good);
+  }
+  .ring-label{
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+
+  .result .label{
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+  .result .value{
+    font-family:'Playfair Display',serif;
+    font-weight:600;
+    font-size:36px;
+    color:var(--terracotta-deep);
+    margin-bottom:4px;
+  }
+  .result .sub{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:20px;
+  }
+
+  .breakdown{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    margin-top:18px;
+    padding-top:18px;
+    border-top:1px solid rgba(44,28,18,0.12);
+  }
+  .breakdown-item{
+    flex:1;
+  }
+  .breakdown-item .num{
+    font-size:19px;
+    font-weight:700;
+    color:var(--ink);
+  }
+  .breakdown-item .num.good{
+    color:var(--good);
+  }
+  .breakdown-item .txt{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+
+  .milestone{
+    margin-top:18px;
+    padding-top:18px;
+    border-top:1px solid rgba(44,28,18,0.12);
+    font-size:13.5px;
+    font-weight:500;
+    color:var(--ink);
+    line-height:1.6;
+  }
+
+  .certificado-btn{
+    display:block;
+    width:100%;
+    background:linear-gradient(135deg, #d9b877, #b8874a);
+    color:#fff;
+    border:none;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    padding:15px 20px;
+    border-radius:100px;
+    cursor:pointer;
+    margin-top:16px;
+    transition:transform .2s ease, box-shadow .2s ease;
+    box-shadow:0 8px 20px -8px rgba(184,135,74,0.6);
+  }
+  .certificado-btn:hover{
+    transform:translateY(-1px);
+    box-shadow:0 10px 24px -8px rgba(184,135,74,0.7);
+  }
+
+  .stat-callout{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    background:rgba(184,135,74,0.12);
+    border:1.5px solid rgba(184,135,74,0.35);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-top:16px;
+    text-align:left;
+  }
+  .stat-callout-icon{
+    font-size:20px;
+    flex-shrink:0;
+  }
+  .stat-callout-text{
+    font-size:12.5px;
+    line-height:1.6;
+    color:var(--ink-soft);
+  }
+  .stat-callout-text strong{
+    color:var(--terracotta-deep);
+  }
+  .stat-callout-source{
+    display:block;
+    font-size:10.5px;
+    color:var(--ink-soft);
+    opacity:0.7;
+    margin-top:4px;
+  }
+
+  .subsidio-banner{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    background:rgba(74,124,89,0.12);
+    border:1.5px solid rgba(74,124,89,0.35);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-top:16px;
+    text-align:left;
+  }
+  .subsidio-banner-icon{
+    font-size:20px;
+    flex-shrink:0;
+  }
+  .subsidio-banner-title{
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--good);
+    margin-bottom:3px;
+  }
+  .subsidio-banner-text{
+    font-size:12px;
+    line-height:1.55;
+    color:var(--ink-soft);
+  }
+
+  .chart-wrap{
+    background:var(--cream);
+    border-radius:16px;
+    padding:20px 18px 14px;
+    margin-top:16px;
+    text-align:left;
+  }
+  .chart-wrap .chart-title{
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:1.2px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:12px;
+    text-align:center;
+  }
+
+  .next-steps{
+    background:var(--cream);
+    border-radius:16px;
+    padding:22px 22px 20px;
+    margin-top:16px;
+  }
+  .next-steps .chart-title{
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:1.2px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+    text-align:center;
+  }
+  .next-steps ol{
+    margin:0;
+    padding-left:20px;
+  }
+  .next-steps li{
+    font-size:13.5px;
+    line-height:1.65;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+  }
+  .next-steps li:last-child{ margin-bottom:0; }
+  .next-steps li::marker{
+    color:var(--terracotta);
+    font-weight:700;
+  }
+
+  .leap-module{
+    margin-top:16px;
+    border:1.5px dashed rgba(180,94,69,0.4);
+    border-radius:16px;
+    padding:18px 20px;
+  }
+  .leap-trigger{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    background:none;
+    border:none;
+    padding:0;
+    cursor:pointer;
+    text-align:left;
+  }
+  .leap-trigger-text{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    font-size:14px;
+    color:var(--ink);
+    line-height:1.5;
+  }
+  .leap-trigger-text strong{
+    color:var(--terracotta-deep);
+  }
+  .leap-emoji{
+    font-size:18px;
+    flex-shrink:0;
+  }
+  .leap-chevron{
+    font-size:20px;
+    font-weight:700;
+    color:var(--terracotta);
+    flex-shrink:0;
+    transition:transform .2s ease;
+  }
+  .leap-chevron.open{
+    transform:rotate(45deg);
+  }
+  .leap-subtitle{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin:8px 0 0 28px;
+  }
+  .leap-content{
+    margin-top:18px;
+    padding-top:18px;
+    border-top:1px solid rgba(180,94,69,0.2);
+  }
+  .leap-result{
+    background:var(--terracotta);
+    border-radius:14px;
+    padding:20px;
+    text-align:center;
+    margin-top:6px;
+  }
+  .leap-result-label{
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:1.2px;
+    text-transform:uppercase;
+    color:rgba(255,255,255,0.8);
+    margin-bottom:6px;
+  }
+  .leap-result-value{
+    font-family:'Playfair Display',serif;
+    font-weight:600;
+    font-size:26px;
+    color:#fff;
+    margin-bottom:6px;
+  }
+  .leap-result-sub{
+    font-size:12px;
+    line-height:1.6;
+    color:rgba(255,255,255,0.85);
+  }
+  #chart{
+    display:block;
+    width:100%;
+    height:auto;
+  }
+
+  .roadmap{
+    display:flex;
+    justify-content:space-between;
+    gap:6px;
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px solid rgba(44,28,18,0.10);
+  }
+  .roadmap-item{
+    flex:1;
+    text-align:center;
+  }
+  .roadmap-pct{
+    font-size:11px;
+    font-weight:700;
+    color:var(--terracotta-deep);
+    margin-bottom:2px;
+  }
+  .roadmap-date{
+    font-size:10.5px;
+    color:var(--ink-soft);
+  }
+
+  .download-row{
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+  }
+  .download-row .copy-btn{
+    margin-top:0;
+  }
+
+  .copy-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    justify-content:center;
+    width:100%;
+    margin-top:16px;
+    padding:13px 18px;
+    background:transparent;
+    color:var(--terracotta-deep);
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    border:1.5px solid var(--terracotta);
+    border-radius:100px;
+    cursor:pointer;
+    transition:background .2s ease, color .2s ease;
+  }
+  .copy-btn.full{
+    margin-top:10px;
+  }
+  .copy-btn:hover{
+    background:var(--terracotta);
+    color:#fff;
+  }
+  .copy-btn.copied{
+    background:var(--good);
+    border-color:var(--good);
+    color:#fff;
+  }
+
+  .confetti{
+    position:fixed;
+    top:-20px;
+    width:9px;
+    height:9px;
+    border-radius:2px;
+    z-index:999;
+    pointer-events:none;
+    animation:confettiFall linear forwards;
+  }
+  @keyframes confettiFall{
+    to{
+      transform:translateY(110vh) rotate(540deg);
+      opacity:0.85;
+    }
+  }
+
+  .newsletter-cta{
+    text-align:center;
+    margin-top:34px;
+  }
+  .newsletter-cta .tag{
+    display:inline-block;
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:#fff;
+    background:var(--terracotta);
+    padding:4px 12px;
+    border-radius:100px;
+    margin-bottom:14px;
+  }
+  .newsletter-cta h2{
+    font-family:'Playfair Display',serif;
+    font-weight:600;
+    font-size:20px;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .newsletter-cta p{
+    font-size:13.5px;
+    line-height:1.65;
+    color:var(--ink-soft);
+    margin:0 0 20px;
+  }
+  .social-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .social-btn{
+    display:block;
+    text-align:center;
+    padding:13px 10px;
+    background:var(--terracotta);
+    color:#fff;
+    text-decoration:none;
+    font-weight:600;
+    font-size:13.5px;
+    border-radius:100px;
+    transition:background .2s ease, transform .2s ease;
+  }
+  .social-btn:hover{
+    background:var(--terracotta-deep);
+    transform:translateY(-1px);
+  }
+  .newsletter-btn{
+    display:inline-block;
+    background:var(--terracotta);
+    color:#fff;
+    text-decoration:none;
+    font-weight:600;
+    font-size:14px;
+    padding:14px 30px;
+    border-radius:100px;
+    transition:background .2s ease, transform .2s ease;
+  }
+  .newsletter-btn:hover{
+    background:var(--terracotta-deep);
+    transform:translateY(-1px);
+  }
+
+  @media (max-width:420px){
+    body{padding:0;}
+    .card{border-radius:0;box-shadow:none;}
+    h1{font-size:25px;}
+  }
+
+  /* ---- Gate de acesso ---- */
+  #calcContent{ display:none; }
+
+  .gate-lock{
+    text-align:center;
+    font-size:34px;
+    margin-bottom:6px;
+  }
+  .gate-intro{
+    text-align:center;
+    font-size:14.5px;
+    font-weight:400;
+    line-height:1.7;
+    color:var(--ink-soft);
+    margin:0 0 28px;
+  }
+  .gate-field{
+    margin-bottom:14px;
+  }
+  input[type="text"].gate-input{
+    width:100%;
+    padding:14px 16px;
+    text-align:center;
+    letter-spacing:1.5px;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    font-weight:600;
+    color:var(--ink);
+    background:var(--cream);
+    border:1.5px solid rgba(44,28,18,0.14);
+    border-radius:12px;
+    outline:none;
+    transition:border-color .2s ease;
+  }
+  input[type="text"].gate-input:focus{
+    border-color:var(--terracotta);
+  }
+  input[type="text"].gate-input.error{
+    border-color:#b3413a;
+  }
+  .gate-error{
+    display:none;
+    text-align:center;
+    font-size:12.5px;
+    color:#b3413a;
+    margin:8px 0 0;
+  }
+  .gate-btn{
+    display:block;
+    width:100%;
+    background:var(--terracotta);
+    color:#fff;
+    text-decoration:none;
+    font-weight:600;
+    font-size:14px;
+    padding:14px 20px;
+    border:none;
+    border-radius:100px;
+    cursor:pointer;
+    margin-top:16px;
+    transition:background .2s ease, transform .2s ease;
+  }
+  .gate-btn:hover{
+    background:var(--terracotta-deep);
+    transform:translateY(-1px);
+  }
+  .gate-divider{
+    width:100%;
+    height:1px;
+    background:linear-gradient(to right, transparent, rgba(44,28,18,0.12), transparent);
+    margin:26px 0;
+  }
+  .gate-help{
+    text-align:center;
+    font-size:13px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    margin-bottom:16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <a class="back-link" href="index.html">← Voltar ao site</a>
+
+  <div id="gate">
+    <div class="gate-lock">🔒</div>
+    <div class="eyebrow">Conteúdo exclusivo</div>
+    <h1>Calculadora de Fundo de Emergência</h1>
+    <p class="gate-intro">Esta ferramenta é uma oferta para quem subscreve a newsletter <strong>Diário de uma Ex-Corporate Girlie</strong>. Se já subscreveste, o código de acesso está no teu email de boas-vindas.</p>
+
+    <div class="gate-field">
+      <input type="text" class="gate-input" id="gateInput" placeholder="Código de acesso" autocomplete="off">
+      <p class="gate-error" id="gateError">Código incorreto — verifica o email de boas-vindas.</p>
+    </div>
+    <button class="gate-btn" id="gateBtn" data-goatcounter-click="calc-unlock-attempt">Desbloquear</button>
+
+    <div class="gate-divider"></div>
+
+    <p class="gate-help">Ainda não subscreveste? Subscreve à newsletter e recebe o código de acesso automaticamente por email.</p>
+    <a class="newsletter-btn" style="display:block;text-align:center;" href="https://substack.com/@mariabexiga?utm_source=website&utm_medium=calculadora_gate&utm_campaign=newsletter_signup" target="_blank" rel="noopener" data-goatcounter-click="calc-gate-newsletter-subscribe">Subscrever à Newsletter</a>
+  </div>
+
+  <div id="calcContent">
+
+  <div class="eyebrow">Ferramenta gratuita para subscritores</div>
+  <h1>Calculadora de Fundo de Emergência</h1>
+  <p class="intro">Um fundo de emergência é simplesmente dinheiro guardado à parte, só para imprevistos — perder um cliente, uma avaria, um mês mau. Não é para investir nem para gastar. Serve só para dormires descansada. Preenche os campos abaixo e vê o teu número, em tempo real.</p>
+
+  <div class="field">
+    <label>Quanto precisas para viver um mês, no mínimo</label>
+    <p class="hint" style="margin:-2px 0 14px;">Não sabes de cabeça? Ninguém sabe. Divide por categorias, é mais fácil — nós somamos por ti.</p>
+
+    <div class="expense-grid">
+      <div class="expense-item">
+        <span class="expense-icon">🏠</span>
+        <div class="expense-field">
+          <label for="despRenda">Renda ou prestação</label>
+          <div class="input-wrap small"><span>€</span><input type="text" id="despRenda" placeholder="0" min="0" inputmode="decimal"></div>
+        </div>
+      </div>
+      <div class="expense-item">
+        <span class="expense-icon">🛒</span>
+        <div class="expense-field">
+          <label for="despAlimentacao">Alimentação</label>
+          <div class="input-wrap small"><span>€</span><input type="text" id="despAlimentacao" placeholder="0" min="0" inputmode="decimal"></div>
+        </div>
+      </div>
+      <div class="expense-item">
+        <span class="expense-icon">🚗</span>
+        <div class="expense-field">
+          <label for="despTransportes">Transportes</label>
+          <div class="input-wrap small"><span>€</span><input type="text" id="despTransportes" placeholder="0" min="0" inputmode="decimal"></div>
+        </div>
+      </div>
+      <div class="expense-item">
+        <span class="expense-icon">🩺</span>
+        <div class="expense-field">
+          <label for="despSeguros">Seguros e saúde</label>
+          <div class="input-wrap small"><span>€</span><input type="text" id="despSeguros" placeholder="0" min="0" inputmode="decimal"></div>
+        </div>
+      </div>
+      <div class="expense-item">
+        <span class="expense-icon">💡</span>
+        <div class="expense-field">
+          <label for="despContas">Água, luz, gás, internet</label>
+          <div class="input-wrap small"><span>€</span><input type="text" id="despContas" placeholder="0" min="0" inputmode="decimal"></div>
+        </div>
+      </div>
+      <div class="expense-item">
+        <span class="expense-icon">➕</span>
+        <div class="expense-field">
+          <label for="despOutros">Outros essenciais</label>
+          <div class="input-wrap small"><span>€</span><input type="text" id="despOutros" placeholder="0" min="0" inputmode="decimal"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="expense-total">
+      <span>Total mensal essencial</span>
+      <strong id="despesasTotal">€ 0</strong>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Quanto tempo queres de "colchão" se algo correr mal</label>
+    <div class="months-options">
+      <div class="month-btn" data-months="3">3 meses</div>
+      <div class="month-btn active" data-months="6">6 meses</div>
+      <div class="month-btn" data-months="12">12 meses</div>
+    </div>
+    <p class="hint" id="mesesHint"></p>
+
+    <div class="scenario-compare" id="scenarioCompare">
+      <div class="scenario-card" data-scenario="3">
+        <div class="scenario-months">3 meses</div>
+        <div class="scenario-value" id="scenario3">€ 0</div>
+      </div>
+      <div class="scenario-card active" data-scenario="6">
+        <div class="scenario-months">6 meses</div>
+        <div class="scenario-value" id="scenario6">€ 0</div>
+      </div>
+      <div class="scenario-card" data-scenario="12">
+        <div class="scenario-months">12 meses</div>
+        <div class="scenario-value" id="scenario12">€ 0</div>
+      </div>
+    </div>
+
+    <button type="button" class="quiz-toggle-link" id="quizToggleLink">Não sabes qual escolher? Responde a 3 perguntas rápidas →</button>
+
+    <div class="quiz-box" id="quizBox" style="display:none;">
+      <div class="quiz-q">
+        <label>O teu rendimento é fixo todos os meses?</label>
+        <div class="quiz-options">
+          <button type="button" class="quiz-opt" data-q="rendimento" data-v="fixo">Sim, fixo</button>
+          <button type="button" class="quiz-opt" data-q="rendimento" data-v="variavel">Não, varia</button>
+        </div>
+      </div>
+      <div class="quiz-q">
+        <label>És a única fonte de rendimento em casa?</label>
+        <div class="quiz-options">
+          <button type="button" class="quiz-opt" data-q="unica" data-v="sim">Sim</button>
+          <button type="button" class="quiz-opt" data-q="unica" data-v="nao">Não, somos dois</button>
+        </div>
+      </div>
+      <div class="quiz-q">
+        <label>Tens filhos ou outros dependentes financeiros?</label>
+        <div class="quiz-options">
+          <button type="button" class="quiz-opt" data-q="dependentes" data-v="sim">Sim</button>
+          <button type="button" class="quiz-opt" data-q="dependentes" data-v="nao">Não</button>
+        </div>
+      </div>
+      <p class="quiz-result" id="quizResult"></p>
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="inflation-box">
+      <div class="inflation-header">
+        <div class="inflation-text">
+          <label style="margin-bottom:4px;">Margem extra para a inflação</label>
+          <p class="hint" style="margin:0;">Os preços sobem todos os anos. 1000€ hoje não vão comprar o mesmo daqui a 2 ou 3 anos. Se guardares só o valor de hoje, esse dinheiro vale cada vez menos com o tempo. Por isso juntamos uma margem extra, só por segurança.</p>
+        </div>
+        <button type="button" class="toggle" id="inflationToggle" role="switch" aria-checked="true">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+      <div class="inflation-badge" id="inflationBadge">+10% incluído no cálculo</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="inflation-box">
+      <div class="inflation-header">
+        <div class="inflation-text">
+          <label style="margin-bottom:4px;">Se fores despedida/o, tens direito a subsídio?</label>
+          <p class="hint" style="margin:0;">Se descontaste para a Segurança Social e fores despedida/o (não se pedires demissão), tens provavelmente direito a subsídio durante uns meses — o que significa que não precisas de ter tudo guardado à partida.</p>
+        </div>
+        <button type="button" class="toggle" id="subsidioToggle" role="switch" aria-checked="false">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+
+      <div class="subsidio-fields" id="subsidioFields" style="display:none;">
+        <div class="field" style="margin:14px 0 0;">
+          <label for="subsidioValor">Quanto recebes de subsídio por mês (estimado)</label>
+          <div class="input-wrap"><span>€</span><input type="text" id="subsidioValor" placeholder="Ex: 600" min="0" inputmode="decimal"></div>
+        </div>
+        <div class="field" style="margin:14px 0 0;">
+          <label for="subsidioMeses">Durante quantos meses tens direito</label>
+          <div class="input-wrap"><span></span><input type="text" id="subsidioMeses" placeholder="Ex: 9" min="0" inputmode="decimal" style="padding-left:16px;"></div>
+          <p class="hint">Não sabes ao certo? A Segurança Social tem um simulador oficial — usa um valor aproximado, dá sempre para ajustar depois.</p>
+        </div>
+        <p class="hint" style="margin-top:12px;"><strong>Nota:</strong> isto aplica-se normalmente a despedimentos. Se saíres por iniciativa própria (para arrancar com um negócio, por exemplo), na maioria dos casos não tens direito a subsídio.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="poupado">Quanto já tens guardado para isto</label>
+    <div class="input-wrap">
+      <span>€</span>
+      <input type="text" id="poupado" placeholder="Ex: 500" min="0" inputmode="decimal">
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="mensal">Quanto consegues poupar por mês</label>
+    <div class="input-wrap">
+      <span>€</span>
+      <input type="text" id="mensal" placeholder="Ex: 150" min="0" inputmode="decimal">
+    </div>
+    <p class="hint">Opcional — para estimarmos quanto tempo falta.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="result">
+
+    <div class="ring-wrap">
+      <svg class="ring" viewBox="0 0 160 160">
+        <circle class="ring-bg" cx="80" cy="80" r="70"></circle>
+        <circle class="ring-progress" id="ringProgress" cx="80" cy="80" r="70"></circle>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-percent" id="ringPercent">0%</div>
+        <div class="ring-label">completo</div>
+      </div>
+    </div>
+
+    <div class="label">O teu fundo de emergência ideal</div>
+    <div class="value" id="valorFundo">€ 0</div>
+    <div class="sub" id="subFundo">preenche as despesas mensais acima</div>
+
+    <div class="breakdown">
+      <div class="breakdown-item">
+        <div class="num" id="valorFalta">€ 0</div>
+        <div class="txt">falta poupar</div>
+      </div>
+      <div class="breakdown-item">
+        <div class="num good" id="valorTempo">—</div>
+        <div class="txt">tempo estimado</div>
+      </div>
+    </div>
+
+    <div class="milestone" id="milestone">Preenche os campos acima para começar.</div>
+
+    <div class="stat-callout" id="statCallout" style="display:none;">
+      <span class="stat-callout-icon">📊</span>
+      <div>
+        <span id="statCalloutText"></span>
+        <span class="stat-callout-source">Fonte: estudo "O Bem-Estar Financeiro em Portugal", Doutor Finanças</span>
+      </div>
+    </div>
+
+    <div class="subsidio-banner" id="subsidioBanner" style="display:none;">
+      <span class="subsidio-banner-icon">🛟</span>
+      <div>
+        <div class="subsidio-banner-title">Com o subsídio de desemprego, a necessidade real é menor</div>
+        <div class="subsidio-banner-text" id="subsidioBannerText"></div>
+      </div>
+    </div>
+
+    <button type="button" class="certificado-btn" id="certificadoBtn" style="display:none;" data-goatcounter-click="calc-certificado">🏆 Descarregar certificado</button>
+
+    <div class="chart-wrap" id="chartWrap" style="display:none;">
+      <div class="chart-title">O teu caminho até lá</div>
+      <canvas id="chart" width="400" height="150"></canvas>
+      <div class="roadmap" id="roadmap"></div>
+    </div>
+
+    <button type="button" class="quiz-toggle-link" id="reminderBtn" data-goatcounter-click="calc-reminder-download">🔔 Lembra-me de rever isto daqui a 6 meses</button>
+
+    <button class="copy-btn full" id="shareImageBtn" type="button" data-goatcounter-click="calc-share-image">📸 Criar imagem para partilhar</button>
+
+    <div class="download-row">
+      <button class="copy-btn" id="downloadPdfBtn" type="button" data-goatcounter-click="calc-download-pdf">⬇️ PDF</button>
+      <button class="copy-btn" id="downloadCsvBtn" type="button" data-goatcounter-click="calc-download-excel">⬇️ Excel</button>
+    </div>
+    <button class="copy-btn full" id="copyBtn" type="button">📋 Copiar resumo</button>
+  </div>
+
+  <div class="next-steps">
+    <div class="chart-title">E agora, na prática?</div>
+    <ol>
+      <li>Abre uma conta poupança separada da tua conta do dia a dia — só isso já evita que gastes sem querer.</li>
+      <li>Programa uma transferência automática todos os meses, mesmo que seja pouco. Constância vale mais do que quantia.</li>
+      <li>Só mexes neste dinheiro por uma emergência real — não para férias, não para "uma oportunidade". Se tiveres dúvidas se é emergência, provavelmente não é.</li>
+    </ol>
+  </div>
+
+  <div class="leap-module">
+    <button type="button" class="leap-trigger" id="leapTrigger">
+      <span class="leap-trigger-text">
+        <span class="leap-emoji">🚀</span>
+        <span>
+          <strong>Opcional:</strong> a pensar em sair do emprego para empreender?
+        </span>
+      </span>
+      <span class="leap-chevron" id="leapChevron">＋</span>
+    </button>
+    <p class="leap-subtitle">Se não é o teu caso, ignora esta parte — o resto da calculadora funciona na mesma sem isto.</p>
+
+    <div class="leap-content" id="leapContent" style="display:none;">
+      <p class="hint" style="margin:0 0 16px;">Isto não substitui o teu fundo de emergência acima — é um cálculo à parte, só para teres uma ideia de quanto tempo aguentas se decidires arriscar.</p>
+
+      <div class="field">
+        <label for="leapNegocio">Quanto esperas ganhar por mês com o negócio, no início</label>
+        <div class="input-wrap"><span>€</span><input type="text" id="leapNegocio" placeholder="Ex: 0 ou 300" min="0" inputmode="decimal"></div>
+        <p class="hint">Podes pôr 0 — é normal não ganhar nada nos primeiros meses.</p>
+      </div>
+
+      <div class="field">
+        <label for="leapExtra">Indemnização ou dinheiro extra ao sair (se houver)</label>
+        <div class="input-wrap"><span>€</span><input type="text" id="leapExtra" placeholder="Ex: 0" min="0" inputmode="decimal"></div>
+      </div>
+
+      <div class="leap-result" id="leapResult" style="display:none;">
+        <div class="leap-result-label">A tua pista estimada</div>
+        <div class="leap-result-value" id="leapPista">—</div>
+        <div class="leap-result-sub" id="leapPistaSub"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="newsletter-cta">
+    <div class="tag">Já és subscritora</div>
+    <h2>Segue-me nas redes</h2>
+    <p>Gostaste desta ferramenta? Há mais como esta a caminho — segue-me para não perderes nada.</p>
+    <div class="social-row">
+      <a href="https://www.instagram.com/maria.ana.bexiga/" target="_blank" rel="noopener" class="social-btn" data-goatcounter-click="calc-follow-instagram">Instagram</a>
+      <a href="https://www.tiktok.com/@maria.bexiga" target="_blank" rel="noopener" class="social-btn" data-goatcounter-click="calc-follow-tiktok">TikTok</a>
+      <a href="https://www.linkedin.com/in/mariabexiga/" target="_blank" rel="noopener" class="social-btn" data-goatcounter-click="calc-follow-linkedin">LinkedIn</a>
+      <a href="https://www.youtube.com/@mariabexiga" target="_blank" rel="noopener" class="social-btn" data-goatcounter-click="calc-follow-youtube">YouTube</a>
+    </div>
+  </div>
+
+  </div>
+
+</div>
+
+<script data-goatcounter="https://mariabexiga.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+<script>
+  // ---- Portão de acesso ----
+  const ACCESS_CODE = "FUNDOEMERGENCIA";
+  const STORAGE_KEY = "ecg_calc_unlocked";
+
+  const gateEl = document.getElementById('gate');
+  const calcContentEl = document.getElementById('calcContent');
+  const gateInputEl = document.getElementById('gateInput');
+  const gateBtnEl = document.getElementById('gateBtn');
+  const gateErrorEl = document.getElementById('gateError');
+
+  function unlock(){
+    gateEl.style.display = 'none';
+    calcContentEl.style.display = 'block';
+  }
+
+  function tryUnlock(){
+    const value = (gateInputEl.value || '').trim().toUpperCase();
+    if (value === ACCESS_CODE){
+      localStorage.setItem(STORAGE_KEY, '1');
+      unlock();
+    } else {
+      gateInputEl.classList.add('error');
+      gateErrorEl.style.display = 'block';
+    }
+  }
+
+  gateBtnEl.addEventListener('click', tryUnlock);
+  gateInputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') tryUnlock();
+    gateInputEl.classList.remove('error');
+    gateErrorEl.style.display = 'none';
+  });
+
+  if (localStorage.getItem(STORAGE_KEY) === '1'){
+    unlock();
+  }
+
+  const expenseIds = ['despRenda','despAlimentacao','despTransportes','despSeguros','despContas','despOutros'];
+  const expenseEls = expenseIds.map(id => document.getElementById(id));
+  const despesasTotalEl = document.getElementById('despesasTotal');
+
+  const poupadoEl = document.getElementById('poupado');
+  const mensalEl = document.getElementById('mensal');
+  const monthBtns = document.querySelectorAll('.month-btn');
+  const scenarioCards = document.querySelectorAll('.scenario-card');
+  const scenarioValueEls = {
+    3: document.getElementById('scenario3'),
+    6: document.getElementById('scenario6'),
+    12: document.getElementById('scenario12')
+  };
+
+  function getDespesasTotal(){
+    return expenseEls.reduce((sum, el) => sum + parseNum(el), 0);
+  }
+
+  const valorFundoEl = document.getElementById('valorFundo');
+  const subFundoEl = document.getElementById('subFundo');
+  const valorFaltaEl = document.getElementById('valorFalta');
+  const valorTempoEl = document.getElementById('valorTempo');
+  const milestoneEl = document.getElementById('milestone');
+  const statCalloutEl = document.getElementById('statCallout');
+  const statCalloutTextEl = document.getElementById('statCalloutText');
+  const ringProgressEl = document.getElementById('ringProgress');
+  const ringPercentEl = document.getElementById('ringPercent');
+  const chartWrapEl = document.getElementById('chartWrap');
+  const chartEl = document.getElementById('chart');
+  const copyBtnEl = document.getElementById('copyBtn');
+  const certificadoBtnEl = document.getElementById('certificadoBtn');
+  const ctx = chartEl.getContext('2d');
+
+  const RING_CIRC = 2 * Math.PI * 70; // 439.8
+  const INPUTS_KEY = 'ecg_calc_inputs';
+
+  let meses = 6;
+  let wasComplete = false;
+  let lastFundo = 0, lastFalta = 0;
+
+  const INFLACAO_TAXA = 0.10;
+  let inflacaoAtiva = true;
+  const inflationToggleEl = document.getElementById('inflationToggle');
+  const inflationBadgeEl = document.getElementById('inflationBadge');
+
+  inflationToggleEl.addEventListener('click', () => {
+    inflacaoAtiva = !inflacaoAtiva;
+    inflationToggleEl.setAttribute('aria-checked', String(inflacaoAtiva));
+    inflationBadgeEl.textContent = inflacaoAtiva ? '+10% incluído no cálculo' : 'Margem desligada';
+    inflationBadgeEl.classList.toggle('off', !inflacaoAtiva);
+    calcular();
+  });
+
+  // ---- subsídio de desemprego ----
+  let subsidioAtivo = false;
+  const subsidioToggleEl = document.getElementById('subsidioToggle');
+  const subsidioFieldsEl = document.getElementById('subsidioFields');
+  const subsidioValorEl = document.getElementById('subsidioValor');
+  const subsidioMesesEl = document.getElementById('subsidioMeses');
+  const subsidioBannerEl = document.getElementById('subsidioBanner');
+  const subsidioBannerTextEl = document.getElementById('subsidioBannerText');
+
+  subsidioToggleEl.addEventListener('click', () => {
+    subsidioAtivo = !subsidioAtivo;
+    subsidioToggleEl.setAttribute('aria-checked', String(subsidioAtivo));
+    subsidioFieldsEl.style.display = subsidioAtivo ? 'block' : 'none';
+    calcular();
+  });
+  [subsidioValorEl, subsidioMesesEl].forEach(el => el.addEventListener('input', calcular));
+
+  // ---- quiz de recomendação ----
+  const quizToggleLinkEl = document.getElementById('quizToggleLink');
+  const quizBoxEl = document.getElementById('quizBox');
+  const quizResultEl = document.getElementById('quizResult');
+  const quizAnswers = {};
+
+  quizToggleLinkEl.addEventListener('click', () => {
+    const showing = quizBoxEl.style.display !== 'none';
+    quizBoxEl.style.display = showing ? 'none' : 'block';
+  });
+
+  document.querySelectorAll('.quiz-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const q = btn.dataset.q;
+      quizAnswers[q] = btn.dataset.v;
+      document.querySelectorAll(`.quiz-opt[data-q="${q}"]`).forEach(b => b.classList.toggle('selected', b === btn));
+
+      if (quizAnswers.rendimento && quizAnswers.unica && quizAnswers.dependentes){
+        let score = 0;
+        if (quizAnswers.rendimento === 'variavel') score++;
+        if (quizAnswers.unica === 'sim') score++;
+        if (quizAnswers.dependentes === 'sim') score++;
+        const sugestao = score === 0 ? 3 : (score === 1 ? 6 : 12);
+        quizResultEl.textContent = `Sugerimos ${sugestao} meses para o teu caso — já selecionámos essa opção acima.`;
+        selecionarMeses(sugestao);
+      }
+    });
+  });
+
+  const mesesHintEl = document.getElementById('mesesHint');
+  const MESES_HINTS = {
+    3: 'Adequado se tens um emprego estável, dois rendimentos em casa, ou já tens outras redes de segurança.',
+    6: 'O equilíbrio recomendado para a maioria das pessoas — nem curto demais, nem um objetivo impossível.',
+    12: 'Recomendado se és freelancer, tens negócio próprio ou rendimento variável — exatamente a tua situação se saíste do corporate.'
+  };
+  function atualizarMesesHint(){
+    mesesHintEl.textContent = MESES_HINTS[meses] || '';
+  }
+
+  function formatEuro(n){
+    return '€ ' + Math.round(n).toLocaleString('pt-PT', {maximumFractionDigits:0});
+  }
+
+  // aceita tanto "1200.50" como "1200,50" (comum em Portugal)
+  function parseNum(el){
+    const raw = String(el.value || '').trim().replace(',', '.');
+    const n = parseFloat(raw);
+    return isNaN(n) ? 0 : n;
+  }
+
+  // ---- animação de contagem para os números grandes ----
+  function animateNumber(el, from, to, formatFn, duration = 500){
+    const start = performance.now();
+    function tick(now){
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const value = from + (to - from) * eased;
+      el.textContent = formatFn(value);
+      if (t < 1) requestAnimationFrame(tick);
+      else el.textContent = formatFn(to);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // ---- confetti ----
+  function lancarConfetti(){
+    const cores = ['#b45e45', '#d9b877', '#4a7c59', '#95492f', '#fffaf3'];
+    for (let i = 0; i < 60; i++){
+      const el = document.createElement('div');
+      el.className = 'confetti';
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.background = cores[Math.floor(Math.random() * cores.length)];
+      el.style.animationDuration = (2.2 + Math.random() * 1.4) + 's';
+      el.style.opacity = String(0.7 + Math.random() * 0.3);
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+  }
+
+  // ---- gráfico de projeção ----
+  function desenharGrafico(poupado, mensal, alvo){
+    const w = chartEl.width, h = chartEl.height;
+    ctx.clearRect(0, 0, w, h);
+
+    if (mensal <= 0 || alvo <= 0){
+      chartWrapEl.style.display = 'none';
+      return;
+    }
+    chartWrapEl.style.display = 'block';
+
+    const totalMeses = Math.min(Math.max(Math.ceil(Math.max(alvo - poupado, 0) / mensal), 1), 12);
+    const padding = { top: 10, right: 10, bottom: 22, left: 10 };
+    const plotW = w - padding.left - padding.right;
+    const plotH = h - padding.top - padding.bottom;
+
+    const pontos = [];
+    for (let m = 0; m <= totalMeses; m++){
+      pontos.push(Math.min(poupado + mensal * m, alvo));
+    }
+    const maxVal = alvo;
+
+    // linha do alvo
+    const yAlvo = padding.top + plotH - (alvo / maxVal) * plotH;
+    ctx.strokeStyle = 'rgba(44,28,18,0.18)';
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, yAlvo);
+    ctx.lineTo(w - padding.right, yAlvo);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // área + linha de progresso
+    const stepX = plotW / totalMeses;
+    ctx.beginPath();
+    pontos.forEach((val, i) => {
+      const x = padding.left + stepX * i;
+      const y = padding.top + plotH - (val / maxVal) * plotH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.lineTo(padding.left + stepX * totalMeses, padding.top + plotH);
+    ctx.lineTo(padding.left, padding.top + plotH);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(180,94,69,0.14)';
+    ctx.fill();
+
+    ctx.beginPath();
+    pontos.forEach((val, i) => {
+      const x = padding.left + stepX * i;
+      const y = padding.top + plotH - (val / maxVal) * plotH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = '#b45e45';
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    // ponto final
+    const lastX = padding.left + stepX * totalMeses;
+    const lastY = padding.top + plotH - (pontos[pontos.length - 1] / maxVal) * plotH;
+    ctx.beginPath();
+    ctx.arc(lastX, lastY, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#95492f';
+    ctx.fill();
+
+    // labels meses
+    ctx.fillStyle = 'rgba(44,28,18,0.55)';
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('hoje', padding.left, h - 6);
+    ctx.fillText(totalMeses >= 12 ? '12+ meses' : `mês ${totalMeses}`, lastX, h - 6);
+  }
+
+  function calcular(){
+    const despesas = getDespesasTotal();
+    const poupado = parseNum(poupadoEl);
+    const mensal = parseNum(mensalEl);
+
+    const fator = inflacaoAtiva ? (1 + INFLACAO_TAXA) : 1;
+
+    despesasTotalEl.textContent = formatEuro(despesas);
+    [3, 6, 12].forEach(m => {
+      scenarioValueEls[m].textContent = formatEuro(despesas * m * fator);
+    });
+
+    const alvoBase = despesas * meses;
+    const alvo = alvoBase * fator;
+    const bufferInflacao = alvo - alvoBase;
+    const falta = Math.max(alvo - poupado, 0);
+    const progresso = alvo > 0 ? Math.min(poupado / alvo, 1) : 0;
+    const completo = falta === 0 && despesas > 0;
+
+    // anel
+    const offset = RING_CIRC * (1 - progresso);
+    ringProgressEl.style.strokeDashoffset = String(offset);
+    ringProgressEl.classList.toggle('complete', completo);
+    ringPercentEl.classList.toggle('complete', completo);
+    animateNumber(ringPercentEl, 0, Math.round(progresso * 100), v => Math.round(v) + '%', 600);
+
+    // números principais
+    animateNumber(valorFundoEl, lastFundo, alvo, formatEuro);
+    animateNumber(valorFaltaEl, lastFalta, falta, formatEuro);
+    lastFundo = alvo;
+    lastFalta = falta;
+
+    subFundoEl.textContent = despesas > 0
+      ? (inflacaoAtiva
+          ? `${meses} meses × ${formatEuro(despesas)} + ${formatEuro(bufferInflacao)} de margem para a inflação`
+          : `${meses} meses × ${formatEuro(despesas)} de despesas`)
+      : 'preenche as despesas mensais acima';
+
+    if (completo){
+      valorTempoEl.textContent = 'Conseguiste! 🎉';
+    } else if (mensal > 0){
+      const tempoMeses = Math.ceil(falta / mensal);
+      if (tempoMeses <= 1) valorTempoEl.textContent = '~1 mês';
+      else if (tempoMeses < 12) valorTempoEl.textContent = `~${tempoMeses} meses`;
+      else valorTempoEl.textContent = `~${(tempoMeses/12).toFixed(1)} anos`;
+    } else {
+      valorTempoEl.textContent = '—';
+    }
+
+    // mensagem motivacional
+    if (despesas === 0){
+      milestoneEl.textContent = 'Preenche os campos acima para começar.';
+    } else if (completo){
+      milestoneEl.textContent = 'O teu fundo de emergência está completo. És literalmente inabalável. 💪';
+    } else if (progresso >= 0.75){
+      milestoneEl.textContent = 'Quase lá — faltam só os últimos metros. 🔥';
+    } else if (progresso >= 0.5){
+      milestoneEl.textContent = 'Já vais a meio caminho. Continua assim.';
+    } else if (progresso >= 0.25){
+      milestoneEl.textContent = 'Bom começo — a consistência é que conta.';
+    } else {
+      milestoneEl.textContent = 'Todo o fundo de emergência começa com o primeiro euro guardado.';
+    }
+
+    // ---- comparação com dados reais de poupança em Portugal ----
+    if (despesas > 0){
+      const alvo3Meses = despesas * 3 * fator;
+      statCalloutEl.style.display = 'flex';
+      if (poupado >= alvo3Meses){
+        statCalloutTextEl.innerHTML = '<strong>42% dos portugueses</strong> não têm sequer um fundo capaz de cobrir 3 meses de despesas — e tu já tens. Estás à frente de quase metade do país.';
+      } else {
+        const pct3 = Math.round(Math.min(poupado / alvo3Meses, 1) * 100);
+        statCalloutTextEl.innerHTML = `<strong>42% dos portugueses</strong> não têm um fundo capaz de cobrir 3 meses de despesas. Tu já tens <strong>${pct3}%</strong> desse marco — continua, estás no caminho certo.`;
+      }
+    } else {
+      statCalloutEl.style.display = 'none';
+    }
+
+    desenharGrafico(poupado, mensal, alvo);
+    desenharRoteiro(poupado, mensal, alvo);
+
+    // ---- subsídio de desemprego (informativo, não altera o cálculo principal) ----
+    if (subsidioAtivo && despesas > 0){
+      const subsidioValor = parseNum(subsidioValorEl);
+      const subsidioMesesElig = parseNum(subsidioMesesEl);
+      const mesesCobertos = Math.min(subsidioMesesElig, meses);
+      const cobertura = subsidioValor * mesesCobertos;
+      if (cobertura > 0){
+        const necessidadeReal = Math.max(alvo - cobertura, 0);
+        subsidioBannerEl.style.display = 'flex';
+        subsidioBannerTextEl.textContent =
+          `Com ${formatEuro(subsidioValor)}/mês durante ${mesesCobertos} ${mesesCobertos === 1 ? 'mês' : 'meses'} de subsídio, `
+          + `a tua necessidade real de poupança cai para ${formatEuro(necessidadeReal)} em vez de ${formatEuro(alvo)}.`;
+      } else {
+        subsidioBannerEl.style.display = 'none';
+      }
+    } else {
+      subsidioBannerEl.style.display = 'none';
+    }
+
+    if (completo && !wasComplete){
+      lancarConfetti();
+    }
+    wasComplete = completo;
+    certificadoBtnEl.style.display = completo ? 'block' : 'none';
+
+    localStorage.setItem(INPUTS_KEY, JSON.stringify({
+      despesasPorCategoria: expenseEls.map(el => parseNum(el)),
+      poupado, mensal, meses
+    }));
+
+    if (typeof calcularPista === 'function') calcularPista();
+  }
+
+  // ---- roteiro com datas de calendário ----
+  const roadmapEl = document.getElementById('roadmap');
+  const MESES_PT = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+  function desenharRoteiro(poupado, mensal, alvo){
+    if (mensal <= 0 || alvo <= 0){
+      roadmapEl.innerHTML = '';
+      return;
+    }
+    const marcos = [25, 50, 75, 100];
+    const hoje = new Date();
+    roadmapEl.innerHTML = marcos.map(pct => {
+      const valorAlvoPct = alvo * pct / 100;
+      let dataTxt;
+      if (poupado >= valorAlvoPct){
+        dataTxt = 'feito ✓';
+      } else {
+        const mesesNecessarios = Math.ceil((valorAlvoPct - poupado) / mensal);
+        const d = new Date(hoje.getFullYear(), hoje.getMonth() + mesesNecessarios, 1);
+        dataTxt = MESES_PT[d.getMonth()] + ' ' + d.getFullYear();
+      }
+      return `<div class="roadmap-item"><div class="roadmap-pct">${pct}%</div><div class="roadmap-date">${dataTxt}</div></div>`;
+    }).join('');
+  }
+
+  function selecionarMeses(m){
+    meses = m;
+    monthBtns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.months, 10) === meses));
+    scenarioCards.forEach(c => c.classList.toggle('active', parseInt(c.dataset.scenario, 10) === meses));
+    atualizarMesesHint();
+    calcular();
+  }
+
+  monthBtns.forEach(btn => {
+    btn.addEventListener('click', () => selecionarMeses(parseInt(btn.dataset.months, 10)));
+  });
+
+  scenarioCards.forEach(card => {
+    card.addEventListener('click', () => selecionarMeses(parseInt(card.dataset.scenario, 10)));
+  });
+
+  [...expenseEls, poupadoEl, mensalEl].forEach(el => el.addEventListener('input', calcular));
+
+  const EXPENSE_LABELS = {
+    despRenda: 'Renda / prestação',
+    despAlimentacao: 'Alimentação',
+    despTransportes: 'Transportes',
+    despSeguros: 'Seguros e saúde',
+    despContas: 'Água, luz, gás, internet',
+    despOutros: 'Outros essenciais'
+  };
+
+  function getResumoData(){
+    const categorias = expenseIds.map(id => ({
+      label: EXPENSE_LABELS[id],
+      valor: parseNum(document.getElementById(id))
+    }));
+    const despesas = getDespesasTotal();
+    const poupado = parseNum(poupadoEl);
+    const mensal = parseNum(mensalEl);
+    const fator = inflacaoAtiva ? (1 + INFLACAO_TAXA) : 1;
+    const alvoBase = despesas * meses;
+    const alvo = alvoBase * fator;
+    const bufferInflacao = alvo - alvoBase;
+    const falta = Math.max(alvo - poupado, 0);
+    return {
+      categorias, despesas, poupado, mensal, meses, alvo, alvoBase, bufferInflacao,
+      inflacaoAtiva, falta, tempo: valorTempoEl.textContent
+    };
+  }
+
+  copyBtnEl.addEventListener('click', () => {
+    const d = getResumoData();
+    const resumo = `O meu fundo de emergência (${d.meses} meses de despesas): ${formatEuro(d.alvo)}\nFalta poupar: ${formatEuro(d.falta)}\nTempo estimado: ${d.tempo}\n\nCalculado em mariabexiga.com/calculadora.html`;
+    navigator.clipboard.writeText(resumo).then(() => {
+      copyBtnEl.textContent = '✓ Copiado!';
+      copyBtnEl.classList.add('copied');
+      setTimeout(() => {
+        copyBtnEl.textContent = '📋 Copiar resumo';
+        copyBtnEl.classList.remove('copied');
+      }, 1800);
+    });
+  });
+
+  const LOGO_B64 = "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";
+
+  // ---- partilhar resultado como imagem (formato Story) ----
+  const shareImageBtnEl = document.getElementById('shareImageBtn');
+
+  function roundRectPath(ctx2, x, y, w, h, r){
+    ctx2.beginPath();
+    ctx2.moveTo(x + r, y);
+    ctx2.arcTo(x + w, y, x + w, y + h, r);
+    ctx2.arcTo(x + w, y + h, x, y + h, r);
+    ctx2.arcTo(x, y + h, x, y, r);
+    ctx2.arcTo(x, y, x + w, y, r);
+    ctx2.closePath();
+  }
+
+  shareImageBtnEl.addEventListener('click', async () => {
+    const d = getResumoData();
+    const originalLabel = shareImageBtnEl.textContent;
+    shareImageBtnEl.textContent = 'A gerar imagem…';
+    shareImageBtnEl.disabled = true;
+
+    try { await document.fonts.ready; } catch(e){}
+
+    const W = 1080, H = 1920;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const c = canvas.getContext('2d');
+
+    // fundo
+    const grad = c.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#c97c5f');
+    grad.addColorStop(1, '#95492f');
+    c.fillStyle = grad;
+    c.fillRect(0, 0, W, H);
+
+    // logótipo + eyebrow
+    const logoImg = new Image();
+    await new Promise(resolve => { logoImg.onload = resolve; logoImg.onerror = resolve; logoImg.src = 'data:image/png;base64,' + LOGO_B64; });
+    c.drawImage(logoImg, W/2 - 45, 90, 90, 90);
+
+    c.textAlign = 'center';
+    c.fillStyle = '#f5ded0';
+    c.font = '600 30px Inter, sans-serif';
+    c.fillText('EX-CORPORATE GIRLIE', W/2, 235);
+
+    // cartão central
+    const cardX = 70, cardY = 300, cardW = W - 140, cardH = 1160;
+    c.fillStyle = '#fffdfa';
+    roundRectPath(c, cardX, cardY, cardW, cardH, 40);
+    c.fill();
+
+    let y = cardY + 90;
+    c.fillStyle = '#b8874a';
+    c.font = '700 26px Inter, sans-serif';
+    c.fillText('O MEU FUNDO DE EMERGÊNCIA', W/2, y);
+
+    y += 90;
+    c.fillStyle = '#95492f';
+    c.font = '600 96px "Playfair Display", serif';
+    c.fillText(formatEuro(d.alvo), W/2, y);
+
+    y += 50;
+    c.fillStyle = '#6b5847';
+    c.font = '400 26px Inter, sans-serif';
+    c.fillText(`${d.meses} meses de despesas essenciais`, W/2, y);
+
+    // anel de progresso
+    const ringCY = y + 220;
+    const ringR = 150;
+    const progresso = d.alvo > 0 ? Math.min(d.poupado / d.alvo, 1) : 0;
+    c.lineWidth = 26;
+    c.strokeStyle = 'rgba(180,94,69,0.15)';
+    c.beginPath();
+    c.arc(W/2, ringCY, ringR, 0, Math.PI * 2);
+    c.stroke();
+
+    c.strokeStyle = progresso >= 1 ? '#4a7c59' : '#b45e45';
+    c.lineCap = 'round';
+    c.beginPath();
+    c.arc(W/2, ringCY, ringR, -Math.PI/2, -Math.PI/2 + Math.PI * 2 * progresso);
+    c.stroke();
+
+    c.fillStyle = progresso >= 1 ? '#4a7c59' : '#95492f';
+    c.font = '600 64px "Playfair Display", serif';
+    c.fillText(Math.round(progresso * 100) + '%', W/2, ringCY + 20);
+    c.fillStyle = '#6b5847';
+    c.font = '600 22px Inter, sans-serif';
+    c.fillText('COMPLETO', W/2, ringCY + 55);
+
+    // breakdown
+    const breakdownY = ringCY + ringR + 110;
+    const cols = [W/2 - 250, W/2, W/2 + 250];
+    const labels = ['JÁ GUARDADO', 'FALTA POUPAR', 'TEMPO'];
+    const values = [formatEuro(d.poupado), formatEuro(d.falta), d.tempo.replace('🎉','').trim()];
+    cols.forEach((x, i) => {
+      c.fillStyle = '#6b5847';
+      c.font = '700 20px Inter, sans-serif';
+      c.fillText(labels[i], x, breakdownY);
+      c.fillStyle = '#2c1c12';
+      c.font = '700 34px Inter, sans-serif';
+      c.fillText(values[i], x, breakdownY + 44);
+    });
+
+    // rodapé
+    c.fillStyle = '#f5ded0';
+    c.font = '600 30px Inter, sans-serif';
+    c.fillText('Diário de uma Ex-Corporate Girlie', W/2, H - 140);
+    c.font = '400 24px Inter, sans-serif';
+    c.fillStyle = 'rgba(245,222,208,0.8)';
+    c.fillText('Cria a tua em mariabexiga.com/calculadora.html', W/2, H - 95);
+
+    canvas.toBlob(async (blob) => {
+      shareImageBtnEl.textContent = originalLabel;
+      shareImageBtnEl.disabled = false;
+      if (!blob) return;
+
+      const file = new File([blob], 'fundo-de-emergencia.png', { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })){
+        try {
+          await navigator.share({
+            files: [file],
+            title: 'O meu fundo de emergência',
+            text: 'Calculado em mariabexiga.com/calculadora.html'
+          });
+          return;
+        } catch(e){ /* utilizador cancelou ou não suportado — cai para download */ }
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'fundo-de-emergencia-maria-bexiga.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  });
+
+  // ---- download PDF ----
+  const downloadPdfBtnEl = document.getElementById('downloadPdfBtn');
+  downloadPdfBtnEl.addEventListener('click', () => {
+    const d = getResumoData();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const terracotta = [180, 94, 69];
+    const terracottaDeep = [149, 73, 47];
+    const gold = [184, 135, 74];
+    const ink = [44, 28, 18];
+    const inkSoft = [107, 88, 71];
+    const paper = [243, 233, 220];
+    const good = [74, 124, 89];
+    const marginX = 44;
+
+    // ---- cabeçalho ----
+    doc.setFillColor(...terracotta);
+    doc.rect(0, 0, pageW, 118, 'F');
+    doc.addImage(LOGO_B64, 'PNG', marginX, 24, 46, 46);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('times', 'bold');
+    doc.setFontSize(21);
+    doc.text('Calculadora de Fundo de Emergência', marginX + 60, 44);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text('Maria Bexiga  ·  Ex-Corporate Girlie  ·  Diário de uma Ex-Corporate Girlie', marginX + 60, 62);
+    doc.setFontSize(9.5);
+    doc.setTextColor(255, 235, 225);
+    doc.text('Relatório gerado em ' + new Date().toLocaleDateString('pt-PT'), marginX + 60, 78);
+
+    let y = 148;
+
+    // ---- resumo em destaque ----
+    doc.setFillColor(...paper);
+    doc.roundedRect(marginX, y, pageW - marginX * 2, 118, 10, 10, 'F');
+    doc.setFillColor(...(d.falta === 0 ? good : terracotta));
+    doc.roundedRect(marginX, y, 7, 118, 3, 3, 'F');
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10.5);
+    doc.setTextColor(...inkSoft);
+    doc.text(`O TEU FUNDO DE EMERGÊNCIA (${d.meses} MESES DE PROTEÇÃO)`, marginX + 26, y + 26);
+    doc.setFont('times', 'bold');
+    doc.setFontSize(30);
+    doc.setTextColor(...terracottaDeep);
+    doc.text(formatEuro(d.alvo), marginX + 26, y + 58);
+
+    const colX = [marginX + 26, marginX + 200, marginX + 360];
+    const colLabel = ['JÁ GUARDADO', 'FALTA POUPAR', 'TEMPO ESTIMADO'];
+    const colValue = [formatEuro(d.poupado), formatEuro(d.falta), d.tempo.replace('🎉','').trim()];
+    colX.forEach((x, i) => {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...inkSoft);
+      doc.text(colLabel[i], x, y + 82);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(...ink);
+      doc.text(colValue[i], x, y + 102);
+    });
+
+    y += 148;
+
+    // ---- tabela de despesas ----
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12.5);
+    doc.setTextColor(...ink);
+    doc.text('As tuas despesas essenciais, por categoria', marginX, y);
+    y += 10;
+
+    const tableTop = y + 12;
+    const rowH = 24;
+    doc.setFillColor(...terracotta);
+    doc.rect(marginX, tableTop, pageW - marginX * 2, rowH, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('CATEGORIA', marginX + 14, tableTop + 16);
+    doc.text('VALOR MENSAL', pageW - marginX - 14, tableTop + 16, { align: 'right' });
+
+    let rowY = tableTop + rowH;
+    d.categorias.forEach((cat, i) => {
+      if (i % 2 === 0){
+        doc.setFillColor(250, 243, 236);
+        doc.rect(marginX, rowY, pageW - marginX * 2, rowH, 'F');
+      }
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10.5);
+      doc.setTextColor(...inkSoft);
+      doc.text(cat.label, marginX + 14, rowY + 16);
+      doc.setTextColor(...ink);
+      doc.setFont('helvetica', 'bold');
+      doc.text(formatEuro(cat.valor), pageW - marginX - 14, rowY + 16, { align: 'right' });
+      rowY += rowH;
+    });
+
+    // total
+    doc.setFillColor(...paper);
+    doc.rect(marginX, rowY, pageW - marginX * 2, rowH, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(...ink);
+    doc.text('TOTAL MENSAL ESSENCIAL', marginX + 14, rowY + 16);
+    doc.setTextColor(...terracottaDeep);
+    doc.text(formatEuro(d.despesas), pageW - marginX - 14, rowY + 16, { align: 'right' });
+    rowY += rowH;
+
+    doc.setDrawColor(...paper);
+    doc.rect(marginX, tableTop, pageW - marginX * 2, rowY - tableTop);
+
+    y = rowY + 30;
+
+    // ---- margem de inflação ----
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11.5);
+    doc.setTextColor(...ink);
+    doc.text('Margem de inflação', marginX, y);
+    y += 16;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...inkSoft);
+    const inflacaoTexto = d.inflacaoAtiva
+      ? `Ativa (+10%): os preços sobem todos os anos, por isso somámos ${formatEuro(d.bufferInflacao)} de margem extra ao valor base de ${formatEuro(d.alvoBase)} — assim o teu dinheiro não vale menos daqui a uns anos.`
+      : 'Desativada — o valor acima é só o preço de hoje, sem margem para a subida de preços com o tempo.';
+    const inflacaoLines = doc.splitTextToSize(inflacaoTexto, pageW - marginX * 2);
+    doc.text(inflacaoLines, marginX, y);
+    y += inflacaoLines.length * 13 + 22;
+
+    // ---- próximos passos ----
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12.5);
+    doc.setTextColor(...ink);
+    doc.text('E agora, na prática?', marginX, y);
+    y += 18;
+
+    const passos = [
+      'Abre uma conta poupança separada da tua conta do dia a dia.',
+      'Programa uma transferência automática todos os meses, mesmo que seja pouco.',
+      'Só mexes neste dinheiro por uma emergência real — nada de férias ou "oportunidades".'
+    ];
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    passos.forEach((p, i) => {
+      doc.setTextColor(...terracotta);
+      doc.setFont('helvetica', 'bold');
+      doc.text(String(i + 1) + '.', marginX, y);
+      doc.setTextColor(...inkSoft);
+      doc.setFont('helvetica', 'normal');
+      const lines = doc.splitTextToSize(p, pageW - marginX * 2 - 18);
+      doc.text(lines, marginX + 16, y);
+      y += lines.length * 13 + 8;
+    });
+
+    // ---- rodapé ----
+    doc.setFillColor(...terracotta);
+    doc.rect(0, pageH - 46, pageW, 46, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(255, 255, 255);
+    doc.textWithLink('mariabexiga.com/calculadora.html', marginX, pageH - 26, { url: 'https://mariabexiga.com/calculadora.html' });
+
+    // redes sociais clicáveis
+    const socialLinks = [
+      { label: 'Instagram', url: 'https://www.instagram.com/maria.ana.bexiga/' },
+      { label: 'TikTok', url: 'https://www.tiktok.com/@maria.bexiga' },
+      { label: 'LinkedIn', url: 'https://www.linkedin.com/in/mariabexiga/' },
+      { label: 'YouTube', url: 'https://www.youtube.com/@mariabexiga' }
+    ];
+    let socialX = marginX;
+    const socialY = pageH - 12;
+    socialLinks.forEach((s, i) => {
+      doc.setTextColor(255, 255, 255);
+      doc.textWithLink(s.label, socialX, socialY, { url: s.url });
+      socialX += doc.getTextWidth(s.label);
+      if (i < socialLinks.length - 1){
+        doc.setTextColor(255, 220, 210);
+        doc.text('  ·  ', socialX, socialY);
+        socialX += doc.getTextWidth('  ·  ');
+      }
+    });
+
+    doc.setTextColor(...gold);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Ferramenta exclusiva para subscritores', pageW - marginX, pageH - 19, { align: 'right' });
+
+    doc.save('fundo-de-emergencia-maria-bexiga.pdf');
+  });
+
+  // ---- certificado ----
+  certificadoBtnEl.addEventListener('click', () => {
+    const d = getResumoData();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'landscape' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const terracotta = [180, 94, 69];
+    const terracottaDeep = [149, 73, 47];
+    const gold = [184, 135, 74];
+    const ink = [44, 28, 18];
+    const inkSoft = [107, 88, 71];
+
+    // fundo
+    doc.setFillColor(255, 250, 243);
+    doc.rect(0, 0, pageW, pageH, 'F');
+
+    // moldura
+    doc.setDrawColor(...gold);
+    doc.setLineWidth(2.5);
+    doc.rect(30, 30, pageW - 60, pageH - 60);
+    doc.setLineWidth(0.75);
+    doc.rect(38, 38, pageW - 76, pageH - 76);
+
+    doc.addImage(LOGO_B64, 'PNG', pageW/2 - 32, 58, 64, 64);
+
+    doc.setTextColor(...gold);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('CERTIFICADO', pageW/2, 148, { align: 'center' });
+
+    doc.setFont('times', 'bold');
+    doc.setFontSize(30);
+    doc.setTextColor(...ink);
+    doc.text('Fundo de Emergência Completo', pageW/2, 182, { align: 'center' });
+
+    doc.setFont('times', 'italic');
+    doc.setFontSize(14);
+    doc.setTextColor(...inkSoft);
+    doc.text('Isto certifica que és, oficialmente, inabalável.', pageW/2, 212, { align: 'center' });
+
+    doc.setFillColor(243, 233, 220);
+    doc.roundedRect(pageW/2 - 160, 240, 320, 90, 10, 10, 'F');
+    doc.setFont('times', 'bold');
+    doc.setFontSize(34);
+    doc.setTextColor(...terracottaDeep);
+    doc.text(formatEuro(d.alvo), pageW/2, 290, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10.5);
+    doc.setTextColor(...inkSoft);
+    doc.text(`guardados — ${d.meses} meses de despesas essenciais cobertos`, pageW/2, 312, { align: 'center' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(...inkSoft);
+    doc.text('Emitido em ' + new Date().toLocaleDateString('pt-PT'), pageW/2, 356, { align: 'center' });
+
+    doc.setDrawColor(...terracotta);
+    doc.setLineWidth(1);
+    doc.line(pageW/2 - 90, 380, pageW/2 + 90, 380);
+    doc.setFont('times', 'italic');
+    doc.setFontSize(12);
+    doc.setTextColor(...ink);
+    doc.text('Maria Bexiga · Ex-Corporate Girlie', pageW/2, 398, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...inkSoft);
+    doc.text('mariabexiga.com/calculadora.html', pageW/2, 414, { align: 'center' });
+
+    doc.save('certificado-fundo-emergencia.pdf');
+  });
+
+  // ---- download Excel (.xlsx real) ----
+  const downloadCsvBtnEl = document.getElementById('downloadCsvBtn');
+  downloadCsvBtnEl.addEventListener('click', () => {
+    const d = getResumoData();
+    const euroFmt = '#,##0.00" €"';
+
+    const rows = [
+      ['Calculadora de Fundo de Emergência — Maria Bexiga'],
+      ['Ex-Corporate Girlie · Gerado em ' + new Date().toLocaleDateString('pt-PT')],
+      [],
+      ['DESPESAS ESSENCIAIS, POR CATEGORIA'],
+      ['Categoria', 'Valor mensal'],
+      ...d.categorias.map(cat => [cat.label, cat.valor]),
+      ['Total mensal essencial', d.despesas],
+      [],
+      ['O TEU FUNDO DE EMERGÊNCIA'],
+      ['Meses de proteção escolhidos', d.meses],
+      ['Valor base (despesas × meses)', d.alvoBase],
+      ['Margem de inflação (+10%)', d.inflacaoAtiva ? d.bufferInflacao : 0],
+      ['Fundo de emergência objetivo', d.alvo],
+      ['Já guardado', d.poupado],
+      ['Falta poupar', d.falta],
+      ['Poupança possível por mês', d.mensal],
+      ['Tempo estimado até ao objetivo', d.tempo.replace('🎉', '').trim()]
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 34 }, { wch: 18 }];
+    ws['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 1 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 1 } },
+      { s: { r: 3, c: 0 }, e: { r: 3, c: 1 } },
+      { s: { r: 4 + d.categorias.length + 3, c: 0 }, e: { r: 4 + d.categorias.length + 3, c: 1 } }
+    ];
+
+    // formatar células de valor monetário
+    const currencyRows = [];
+    for (let i = 0; i < d.categorias.length; i++) currencyRows.push(5 + i);
+    currencyRows.push(5 + d.categorias.length); // total
+    const secondBlockStart = 5 + d.categorias.length + 3; // após cabeçalho "O TEU FUNDO..."
+    [secondBlockStart + 1, secondBlockStart + 2, secondBlockStart + 3, secondBlockStart + 4, secondBlockStart + 5, secondBlockStart + 6].forEach(r => currencyRows.push(r));
+
+    currencyRows.forEach(r => {
+      const cellRef = XLSX.utils.encode_cell({ r, c: 1 });
+      if (ws[cellRef] && typeof ws[cellRef].v === 'number'){
+        ws[cellRef].z = euroFmt;
+      }
+    });
+
+    const wsNotas = XLSX.utils.aoa_to_sheet([
+      ['Próximos passos'],
+      ['1. Abre uma conta poupança separada da tua conta do dia a dia.'],
+      ['2. Programa uma transferência automática todos os meses, mesmo que seja pouco.'],
+      ['3. Só mexes neste dinheiro por uma emergência real — nada de férias ou "oportunidades".'],
+      [],
+      ['Sobre a margem de inflação'],
+      ['Os preços sobem todos os anos — 1000€ hoje não compram o mesmo daqui a uns anos.'],
+      ['Por isso, esta calculadora soma 10% de margem extra por defeito (podes desligar na ferramenta).'],
+      [],
+      ['Segue-me'],
+      ['Instagram'],
+      ['TikTok'],
+      ['LinkedIn'],
+      ['YouTube'],
+      [],
+      ['mariabexiga.com/calculadora.html — ferramenta exclusiva para subscritores.']
+    ]);
+    wsNotas['!cols'] = [{ wch: 90 }];
+
+    // hiperligações reais nas células de redes sociais e no site
+    const socialLinksXlsx = [
+      { row: 10, url: 'https://www.instagram.com/maria.ana.bexiga/' },
+      { row: 11, url: 'https://www.tiktok.com/@maria.bexiga' },
+      { row: 12, url: 'https://www.linkedin.com/in/mariabexiga/' },
+      { row: 13, url: 'https://www.youtube.com/@mariabexiga' }
+    ];
+    socialLinksXlsx.forEach(({ row, url }) => {
+      const ref = XLSX.utils.encode_cell({ r: row, c: 0 });
+      if (wsNotas[ref]) wsNotas[ref].l = { Target: url };
+    });
+    const siteRef = XLSX.utils.encode_cell({ r: 15, c: 0 });
+    if (wsNotas[siteRef]) wsNotas[siteRef].l = { Target: 'https://mariabexiga.com/calculadora.html' };
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Fundo de Emergência');
+    XLSX.utils.book_append_sheet(wb, wsNotas, 'Notas');
+
+    XLSX.writeFile(wb, 'fundo-de-emergencia-maria-bexiga.xlsx');
+  });
+
+  // ---- lembrete de revisão (.ics) ----
+  const reminderBtnEl = document.getElementById('reminderBtn');
+  reminderBtnEl.addEventListener('click', () => {
+    const data = new Date();
+    data.setMonth(data.getMonth() + 6);
+    const y = data.getFullYear();
+    const m = String(data.getMonth() + 1).padStart(2, '0');
+    const dia = String(data.getDate()).padStart(2, '0');
+    const dataStr = `${y}${m}${dia}`;
+
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Maria Bexiga//Calculadora Fundo de Emergencia//PT',
+      'BEGIN:VEVENT',
+      'UID:' + Date.now() + '@mariabexiga.com',
+      'DTSTAMP:' + dataStr + 'T090000Z',
+      'DTSTART;VALUE=DATE:' + dataStr,
+      'SUMMARY:Rever o meu fundo de emergência',
+      'DESCRIPTION:As despesas mudam — vale a pena voltar à calculadora e atualizar os números. mariabexiga.com/calculadora.html',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'rever-fundo-emergencia.ics';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  // ---- módulo opcional: posso dar o salto? ----
+  const leapTriggerEl = document.getElementById('leapTrigger');
+  const leapChevronEl = document.getElementById('leapChevron');
+  const leapContentEl = document.getElementById('leapContent');
+  const leapNegocioEl = document.getElementById('leapNegocio');
+  const leapExtraEl = document.getElementById('leapExtra');
+  const leapResultEl = document.getElementById('leapResult');
+  const leapPistaEl = document.getElementById('leapPista');
+  const leapPistaSubEl = document.getElementById('leapPistaSub');
+
+  leapTriggerEl.addEventListener('click', () => {
+    const aberto = leapContentEl.style.display !== 'none';
+    leapContentEl.style.display = aberto ? 'none' : 'block';
+    leapChevronEl.classList.toggle('open', !aberto);
+    leapChevronEl.textContent = aberto ? '＋' : '×';
+  });
+
+  function calcularPista(){
+    const despesas = getDespesasTotal();
+    const poupado = parseNum(poupadoEl);
+    const negocio = parseNum(leapNegocioEl);
+    const extra = parseNum(leapExtraEl);
+
+    if (despesas <= 0){
+      leapResultEl.style.display = 'none';
+      return;
+    }
+
+    // nota: pedir demissão por iniciativa própria normalmente não dá direito a
+    // subsídio de desemprego em Portugal, por isso este cálculo não o inclui.
+    let saldo = poupado + extra;
+    let mes = 0;
+    const LIMITE = 60;
+    while (saldo > 0 && mes < LIMITE){
+      const entradas = negocio;
+      saldo += entradas - despesas;
+      mes++;
+      if (negocio >= despesas){
+        // o negócio já cobre as despesas — pista efetivamente ilimitada
+        leapResultEl.style.display = 'block';
+        leapPistaEl.textContent = 'Pista ilimitada 🎉';
+        leapPistaSubEl.textContent = 'O que esperas ganhar com o negócio já cobre as tuas despesas essenciais.';
+        return;
+      }
+    }
+
+    leapResultEl.style.display = 'block';
+    if (mes >= LIMITE){
+      leapPistaEl.textContent = 'Mais de 5 anos';
+      leapPistaSubEl.textContent = 'Com estes números, o teu dinheiro dura muito tempo — mas revê os valores com atenção, parece otimista.';
+    } else {
+      leapPistaEl.textContent = `≈ ${mes} ${mes === 1 ? 'mês' : 'meses'}`;
+      let sub = `É o tempo estimado até ficares sem dinheiro, contando com ${formatEuro(poupado)} guardados`;
+      if (extra > 0) sub += ` + ${formatEuro(extra)} de indemnização/extra`;
+      if (negocio > 0) sub += `, ${formatEuro(negocio)}/mês esperados do negócio`;
+      sub += '. Não conta com subsídio de desemprego, porque quem pede demissão por iniciativa própria normalmente não tem direito.';
+      leapPistaSubEl.textContent = sub;
+    }
+  }
+
+  [leapNegocioEl, leapExtraEl].forEach(el => el.addEventListener('input', calcularPista));
+
+  // ---- restaurar dados guardados ----
+  try {
+    const saved = JSON.parse(localStorage.getItem(INPUTS_KEY) || 'null');
+    if (saved){
+      if (saved.despesasPorCategoria){
+        expenseIds.forEach((id, i) => {
+          const el = document.getElementById(id);
+          const val = saved.despesasPorCategoria[i];
+          if (val) el.value = val;
+        });
+      }
+      if (saved.poupado) poupadoEl.value = saved.poupado;
+      if (saved.mensal) mensalEl.value = saved.mensal;
+      if (saved.meses){
+        meses = saved.meses;
+        monthBtns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.months,10) === meses));
+        scenarioCards.forEach(c => c.classList.toggle('active', parseInt(c.dataset.scenario,10) === meses));
+      }
+    }
+  } catch(e){}
+
+  atualizarMesesHint();
+  calcular();
+</script>
+
+</body>
+</html>
